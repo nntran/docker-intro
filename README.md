@@ -16,31 +16,40 @@ Comment utiliser ce projet ?
 1. Construire l'image Docker
 
 ```sh
-docker build --tag ntdtfr/hello-world hello-world
+docker build --rm --tag <votre id docker hub>/hello-world .
 ```
 
 2. Exécuter le container
 
 ```sh
-docker run -p 8080:80 ntdtfr/hello-world
+docker run --rm -p 8080:5000 <votre id docker hub>/hello-world
 ```
 
-3. Tester l'url : http://localhost:8080
+Url pour tester : http://localhost:8080
 
-4. Si Ok, on push l'image sur le dépôt Docker Hub
+3. Si ça fonctionne, on push sur le repos Docker Hub
 
 ```sh
-docker push ntdtfr/hello-world
+docker push <votre id docker hub>/hello-world
 ```
+
+Exemple de traces :
+
+```
+The push refers to repository [docker.io/<votre id docker hub>/hello-world]
+256a7af3acb1: Pushed 
+latest: digest: sha256:cbf0d4e021288ac28c60433a62e0ca9ee42e4a830dd4d8479afc0ad5b12b7115 size: 528
+```
+
 
 ## TP : Pinger
 
-**Objectif** : Créer une image pour faire un « ping » d’une machine sur le réseau en se basant sur l’image officielle « alpine ».
-
-L’adresse IP de la machine doit être passé en paramètre de la commande « docker build … », par exemple :
-
+**Objectif** : 
+* Créer une image pour faire un « ping » d’une machine sur le réseau en se basant sur l’image officielle « alpine ».
+* L'adresse IP de la machine doit être passé en argument de la commande `build ...`. Par défaut, il prendra la valeur `localhost` si on ne le précise pas. Par exemple :
+`
 ```sh
-docker build --build-arg SERVER=192.168.xxx.xxx --tag <votre id docker hub>/pinger pinger
+docker build --rm --build-arg SERVER=192.168.xxx.xxx --tag <votre id docker hub>/pinger .
 ```
 
 Doc : https://docs.docker.com/engine/reference/builder/
@@ -49,13 +58,13 @@ Doc : https://docs.docker.com/engine/reference/builder/
 1. Construire l'image Docker
 
 ```sh
-docker build --build-arg SERVER=localhost --tag ntdtfr/pinger pinger
+docker build --rm=true --build-arg SERVER=localhost --tag <votre id docker hub>/pinger .
 ```
 
 2. Exécuter le container
 
 ```sh
-docker run --name pinger ntdtfr/pinger
+docker run --name pinger <votre id docker hub>/pinger
 ```
 
 Traces : 
@@ -70,16 +79,17 @@ PING localhost (127.0.0.1): 56 data bytes
 64 bytes from 127.0.0.1: seq=5 ttl=64 time=0.072 ms
 ```
 
-1. On push l'image sur le dépôt Docker Hub
+3. On push l'image sur le repos Docker Hub
 
 ```sh
-docker push ntdtfr/pinger
+docker push <votre id docker hub>/pinger
 ```
 
-Traces :
 
-```
-The push refers to repository [docker.io/ntdtfr/pinger]
-256a7af3acb1: Pushed 
-latest: digest: sha256:cbf0d4e021288ac28c60433a62e0ca9ee42e4a830dd4d8479afc0ad5b12b7115 size: 528
-```
+## TP : Persistance des données
+
+
+
+
+## TP : docker-compose
+
