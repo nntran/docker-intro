@@ -6,10 +6,30 @@
 * Commandes CLI docker-compose : https://docs.docker.com/compose/reference/overview/
 * Comandes CLI docker-machine : https://docs.docker.com/machine/reference/
 
+## Commandes utiles
+
+### Supprimer tous les containers
+
+```sh
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+```
+
+### Supprimer toutes les images
+
+```sh
+docker rmi $(docker ls -q)
+docker rmi $(docker images -f 'dangling=true' -q)
+```
+
+### Seulement les images `none`
+```sh
+docker rmi $(docker images -f 'dangling=true' -q)
+```
 
 ## TP : Hello World
 
-**Objectif** : Créer un simple Dockerfile en se basant sur l'image tutum/hello-world.
+**Objectif** : Créer un simple Dockerfile en se basant sur mon image ntdtfr/hello-world.
 
 Comment utiliser ce projet ?
 
@@ -86,10 +106,46 @@ docker push <votre id docker hub>/pinger
 ```
 
 
-## TP : Persistance des données
+## TP : Docker Compose
+
+
+```sh
+docker-compose up
+```
+
+## TP : Docker Machine
+
+### Créer une machine virtuelle
+
+#### Pour macOS / Linux
+
+```sh
+docker-machine create --driver=virtualbox web-server
+```
+
+#### Pour Windows
+
+```sh
+docker-machine create --driver=hyperv web-server
+```
+
+```sh
+docker-machine env web-server
+```
+
+```sh
+eval $(docker-machine env web-server)
+```
 
 
 
 
-## TP : docker-compose
+## TP : Swarm
 
+```sh
+docker swarm init
+```
+
+```sh
+docker stack deploy --compose-file docker-stack.yml web
+```
