@@ -1,10 +1,12 @@
 # Formation Docker
 
+Solutions des TP
+
 ## Documentation
 
-* Commandes CLI docker : https://docs.docker.com/engine/reference/commandline/cli/
-* Commandes CLI docker-compose : https://docs.docker.com/compose/reference/overview/
-* Comandes CLI docker-machine : https://docs.docker.com/machine/reference/
+- Commandes CLI docker : https://docs.docker.com/engine/reference/commandline/cli/
+- Commandes CLI docker-compose : https://docs.docker.com/compose/reference/overview/
+- Comandes CLI docker-machine : https://docs.docker.com/machine/reference/
 
 ## Commandes utiles
 
@@ -23,15 +25,19 @@ docker rmi $(docker images -f 'dangling=true' -q)
 ```
 
 ### Seulement les images `none`
+
 ```sh
 docker rmi $(docker images -f 'dangling=true' -q)
 ```
 
-## TP : Hello World
+## TP 1 : Hello World
 
-**Objectif** : Créer un simple Dockerfile en se basant sur mon image ntdtfr/hello-world.
+Dockerfile
 
-Comment utiliser ce projet ?
+```Dockerfile
+FROM ntdtfr/hello-world
+LABEL maintainer="..."
+```
 
 1. Construire l'image Docker
 
@@ -39,7 +45,7 @@ Comment utiliser ce projet ?
 docker build --rm --tag <votre id docker hub>/hello-world .
 ```
 
-2. Exécuter le container
+2. Déployer l'application
 
 ```sh
 docker run --rm -p 8080:5000 <votre id docker hub>/hello-world
@@ -47,105 +53,190 @@ docker run --rm -p 8080:5000 <votre id docker hub>/hello-world
 
 Url pour tester : http://localhost:8080
 
-3. Si ça fonctionne, on push sur le repos Docker Hub
+3. Si ça fonctionne, on `push` sur le repos Docker Hub
 
 ```sh
-docker push <votre id docker hub>/hello-world
+docker login
+
+docker push <votre id docker`hub>/hello-world
 ```
 
 Exemple de traces :
 
 ```
 The push refers to repository [docker.io/<votre id docker hub>/hello-world]
-256a7af3acb1: Pushed 
+256a7af3acb1: Pushed
 latest: digest: sha256:cbf0d4e021288ac28c60433a62e0ca9ee42e4a830dd4d8479afc0ad5b12b7115 size: 528
 ```
 
+## TP 2 : Pinger
 
-## TP : Pinger
+Dockerfile
 
-**Objectif** : 
-* Créer une image pour faire un « ping » d’une machine sur le réseau en se basant sur l’image officielle « alpine ».
-* L'adresse IP de la machine doit être passé en argument de la commande `build ...`. Par défaut, il prendra la valeur `localhost` si on ne le précise pas. Par exemple :
-`
-```sh
-docker build --rm --build-arg SERVER=192.168.xxx.xxx --tag <votre id docker hub>/pinger .
+```Dockerfile
+FROM alpine
+LABEL maintainer="..."
+ARG SERVER_IP
+ENV SERVER ${SERVER_IP:-localhost}
+CMD ping $SERVER
 ```
 
-Doc : https://docs.docker.com/engine/reference/builder/
-
-
-1. Construire l'image Docker
+1. Pour construire l'image Docker
 
 ```sh
 docker build --rm=true --build-arg SERVER=localhost --tag <votre id docker hub>/pinger .
 ```
 
-2. Exécuter le container
+2. Pour exécuter l'application
 
 ```sh
-docker run --name pinger <votre id docker hub>/pinger
+docker run --name pinger -e SERVER=192.168.xxx.xxx <votre id docker hub>/pinger
 ```
 
-Traces : 
-
-```
-PING localhost (127.0.0.1): 56 data bytes
-64 bytes from 127.0.0.1: seq=0 ttl=64 time=0.115 ms
-64 bytes from 127.0.0.1: seq=1 ttl=64 time=0.087 ms
-64 bytes from 127.0.0.1: seq=2 ttl=64 time=0.072 ms
-64 bytes from 127.0.0.1: seq=3 ttl=64 time=0.069 ms
-64 bytes from 127.0.0.1: seq=4 ttl=64 time=0.070 ms
-64 bytes from 127.0.0.1: seq=5 ttl=64 time=0.072 ms
-```
-
-3. On push l'image sur le repos Docker Hub
+3. Pour pusher l'image sur le repos Docker Hub
 
 ```sh
 docker push <votre id docker hub>/pinger
 ```
 
-
-## TP : Docker Compose
-
+## TP 3 : Exposition des ports
 
 ```sh
-docker-compose up
+docker run --name hello-world -p 8080:5000 -d ntdtfr/hello-world
 ```
 
-## TP : Docker Machine
+## TP 4 : Volume et persistence des données
 
-### Créer une machine virtuelle
+```sh
+docker run --name pic1 -p 8081:5000 -v /Users/ntran/Datas/pictures:/pic-viewer/static -d ntdtfr/pic-viewer
+```
+
+## TP 5 : Composition des services avec `docker-compose`
+
+docker-compose.yml
+
+```yaml
+version: "3"
+services:
+  pic-viewer:
+    image: ntdtfr/pic-viewer
+    restart: always
+    ports:
+      - 8090:5000
+    volumes:
+      - /Users/ntran/Datas/pictures:/pic-viewer/static
+```
+
+## TP 6 : Docker Machine
+
+### Création d'une machine virtuelle avec `docker-machine`
 
 #### Pour macOS / Linux
 
 ```sh
-docker-machine create --driver=virtualbox web-server
+docker-machine create --driver=virtualbox vm-web-server
 ```
 
 #### Pour Windows
 
 ```sh
-docker-machine create --driver=hyperv web-server
+docker-machine create --driver=hyperv vm-web-server
+```
+
+### Déploiement de l'application `pic-viewer` sans mapping de volumes
+
+```sh
+eval $(docker-machine env vm-web-server)
+docker run -d -p 8080:5000 --restart=always ntdtfr/pic-viewer
+```
+
+### Reset des variables d'environnement
+
+```sh
+eval $(docker-machine env -u)
+```
+
+## TP 7 : Swarm
+
+docker-stack.yml
+
+```yaml
+version: "3"
+services:
+  pic-viewer:
+    image: ntdtfr/pic-viewer
+    ports:
+      - 8090:5000
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
 ```
 
 ```sh
-docker-machine env web-server
+master_ip=`docker-machine ip vm-web-server`
+docker swarm init --advertise-addr $master_ip
 ```
 
-```sh
-eval $(docker-machine env web-server)
 ```
+Swarm initialized: current node (nm7prjsmmkev04h1jkq0asdv4) is now a manager.
 
+To add a worker to this swarm, run the following command:
 
+    docker swarm join --token SWMTKN-1-07dax26x6l3odl7xniex5taq0fke1noy7i5mqgvv54xje8yk35-2dmxak6hf6zm7w6ha3bsknf0f 192.168.99.148:2377
 
-
-## TP : Swarm
-
-```sh
-docker swarm init
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 ```
 
 ```sh
 docker stack deploy --compose-file docker-stack.yml web
+```
+
+```
+Creating network web_default
+Creating service web_pic-viewer
+```
+
+```sh
+docker stack services web
+```
+
+s
+
+```
+ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
+mfysi1tzwfgz        web_pic-viewer      replicated          3/3                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
+```
+
+```sh
+docker service ls
+```
+
+```
+ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
+mfysi1tzwfgz        web_pic-viewer      replicated          3/3                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
+```
+
+```
+docker service scale web_pic-viewer=5
+```
+
+```
+web_pic-viewer scaled to 5
+overall progress: 5 out of 5 tasks
+1/5: running   [==================================================>]
+2/5: running   [==================================================>]
+3/5: running   [==================================================>]
+4/5: running   [==================================================>]
+5/5: running   [==================================================>]
+verify: Service converged
+```
+
+```sh
+docker service ls
+```
+
+```
+ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
+mfysi1tzwfgz        web_pic-viewer      replicated          5/5                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
 ```
