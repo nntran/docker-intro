@@ -5,6 +5,8 @@ services:
     ports:
     - 8090:5000
     deploy:
-      replicas: 3
+      replicas: 2
       restart_policy:
         condition: on-failure
+      placement:
+        constraints: [node.role == worker]

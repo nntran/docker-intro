@@ -1,12 +1,4 @@
-# Formation Docker
-
-Solutions des TP
-
-## Documentation
-
-- Commandes CLI docker : https://docs.docker.com/engine/reference/commandline/cli/
-- Commandes CLI docker-compose : https://docs.docker.com/compose/reference/overview/
-- Comandes CLI docker-machine : https://docs.docker.com/machine/reference/
+# Travaux pratiques
 
 ## Commandes utiles
 
@@ -105,7 +97,7 @@ docker push <votre id docker hub>/pinger
 docker run --name hello-world -p 8080:5000 -d ntdtfr/hello-world
 ```
 
-## TP 4 : Volume et persistence des données
+## TP 4 : Volume et persistance des données
 
 ```sh
 docker run --name pic1 -p 8081:5000 -v /Users/ntran/Datas/pictures:/pic-viewer/static -d ntdtfr/pic-viewer
@@ -166,11 +158,13 @@ services:
   pic-viewer:
     image: ntdtfr/pic-viewer
     ports:
-      - 8090:5000
+    - 8090:5000
     deploy:
-      replicas: 3
+      replicas: 2
       restart_policy:
         condition: on-failure
+      placement:
+        constraints: [node.role == worker]
 ```
 
 ```sh
@@ -197,16 +191,6 @@ Creating network web_default
 Creating service web_pic-viewer
 ```
 
-```sh
-docker stack services web
-```
-
-s
-
-```
-ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
-mfysi1tzwfgz        web_pic-viewer      replicated          3/3                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
-```
 
 ```sh
 docker service ls
@@ -214,7 +198,7 @@ docker service ls
 
 ```
 ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
-mfysi1tzwfgz        web_pic-viewer      replicated          3/3                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
+mfysi1tzwfgz        web_pic-viewer      replicated          2/2                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
 ```
 
 ```
