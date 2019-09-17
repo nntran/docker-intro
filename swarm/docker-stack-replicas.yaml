@@ -5,6 +5,7 @@ services:
     ports:
     - 8090:5000
     deploy:
+      mode: replicated
       replicas: 2
       restart_policy:
         condition: on-failure

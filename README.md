@@ -150,7 +150,7 @@ eval $(docker-machine env -u)
 
 ## TP 7 : Swarm
 
-docker-stack.yml
+docker-stack.yaml
 
 ```yaml
 version: "3"
@@ -160,6 +160,7 @@ services:
     ports:
     - 8090:5000
     deploy:
+      mode: replicated
       replicas: 2
       restart_policy:
         condition: on-failure
@@ -183,7 +184,7 @@ To add a manager to this swarm, run 'docker swarm join-token manager' and follow
 ```
 
 ```sh
-docker stack deploy --compose-file docker-stack.yml web
+docker stack deploy --compose-file docker-stack.yaml web
 ```
 
 ```
