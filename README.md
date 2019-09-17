@@ -1,33 +1,48 @@
-# Travaux pratiques
+# Travaux pratiques (TP)
 
 ## Commandes utiles
 
-### Supprimer tous les containers
+### Supprimer tous les conteneurs (containers) Docker
 
 ```sh
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 ```
 
-### Supprimer toutes les images
+### Supprimer toutes les images Docker
 
 ```sh
 docker rmi $(docker ls -q)
 docker rmi $(docker images -f 'dangling=true' -q)
 ```
 
-### Seulement les images `none`
+### Supprimer seulement les images `none`
 
 ```sh
 docker rmi $(docker images -f 'dangling=true' -q)
 ```
 
+### Conseils
+
+Voici quelques conseils à prendre en compte avant de vous lancer dans la réalisation des TP ci-après.
+
+- [x] Pensez à créer un sous répertoire pour stocker vos fichiers pour chaque TP. 
+- [ ] Munissez-vous d'un éditeur qui reconnait la syntaxe Dockerfile. 
+
+
+
 ## TP 1 : Hello World
 
 **Objectifs :** 
- - Créer une image docker en se basant sur l'image `hello-world` existante. 
+ - Créer une image docker en se basant sur l'image officielle `hello-world` existante. 
  - Faire un test d'exécution avec la commande `docker run ...`.
  - Pousser l'image dans le dépôt de Docker Hub.
+
+**Prérquis :**
+- [x] Avoir un compte [Docker Hub](https://hub.docker.com)
+- [x] Connaître les commandes basiques de Docker
+- [x] Connaître les instructions basiques d'écriture d'un Dockerfile
+
 
 Commencez par créer le fichier [Dockerfile](hello-world/Dockerfile) :
  
@@ -54,7 +69,7 @@ Faites un test d'exécution :
 docker run <votre-id-docker-hub>/hello-world
 ```
 
-Si ça fonctionne, poussez l'image un sur votre dépôt Docker Hub :
+Si tout se passe bien (il n'y a aucune raison que cela se passe mal ;)), poussez votre image un sur votre dépôt `Docker Hub` :
 
 ```sh
 docker login
@@ -144,7 +159,7 @@ Créez d'abord un commutateur virtuel (virtual switch) depuis le Gestionnaire Hy
 
 ![](./images/vitrual-switch.png)
 
-Une fois que le commutaeur créé, ouvrez un terminal Powershell en mode administrateur et exécutez la commande ci-dessous :
+Une fois que le commutateur créé, ouvrez un terminal Powershell en mode administrateur et exécutez la commande ci-dessous :
 
 ```sh
 docker-machine create --driver hyperv --hyperv-virtual-switch form-docker vm-web-server
