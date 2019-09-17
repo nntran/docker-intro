@@ -123,24 +123,44 @@ services:
 
 ### Création d'une machine virtuelle avec `docker-machine`
 
-#### Pour macOS / Linux
+#### Pour macOS / Linux (Virtualbox)
 
 ```sh
 docker-machine create --driver=virtualbox vm-web-server
 ```
 
-#### Pour Windows
+#### Pour Windows (Hyper-V)
+
+1. Créez un commutateur virtuel (virtual switch) nommé "form-docker" depuis l'interface Hyper-V.
+
+![](./images/virtual-switch.png)
+
+2. Créez la VM :
 
 ```sh
-docker-machine create --driver=hyperv vm-web-server
+docker-machine create --driver hyperv --hyperv-virtual-switch form-docker --hyperv-disk-size 2048 vm-web-server
 ```
 
 ### Déploiement de l'application `pic-viewer` sans mapping de volumes
 
+#### Pour macOS / Linux
+
 ```sh
 eval $(docker-machine env vm-web-server)
+
 docker run -d -p 8080:5000 --restart=always ntdtfr/pic-viewer
 ```
+
+![](./images/docker-machine-env.png)
+
+
+#### Pour Windows
+
+```sh
+docker-machine env vm-web-server | Invoke-Expression
+```
+
+![](./images/docker-machine-env-expr.png)
 
 ### Reset des variables d'environnement
 
@@ -150,7 +170,8 @@ eval $(docker-machine env -u)
 
 ## TP 7 : Swarm
 
-docker-stack.yaml
+
+docker-stack-replicas.yaml
 
 ```yaml
 version: "3"
