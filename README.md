@@ -24,46 +24,50 @@ docker rmi $(docker images -f 'dangling=true' -q)
 
 ## TP 1 : Hello World
 
-Dockerfile
+**Objectifs :** 
+ - Créer une image docker en se basant sur l'image `hello-world` existante. 
+ - Faire un test d'exécution avec la commande `docker run ...`.
+ - Pousser l'image dans le dépôt de Docker Hub.
+
+Commencez par créer le fichier [Dockerfile](hello-world/Dockerfile) :
+ 
+<details open>
+  <summary>Dockerfile</summary>
+
 
 ```Dockerfile
-FROM ntdtfr/hello-world
+FROM hello-world
 LABEL maintainer="..."
 ```
 
-1. Construire l'image Docker
+</details>
+
+Utilisez la commande ci-dessous pour construire votre image : 
 
 ```sh
-docker build --rm --tag <votre id docker hub>/hello-world .
+docker build --rm --tag <votre-id-docker-hub>/hello-world .
 ```
 
-2. Déployer l'application
+Faites un test d'exécution :
 
 ```sh
-docker run --rm -p 8080:5000 <votre id docker hub>/hello-world
+docker run <votre-id-docker-hub>/hello-world
 ```
 
-Url pour tester : http://localhost:8080
-
-3. Si ça fonctionne, on `push` sur le repos Docker Hub
+Si ça fonctionne, poussez l'image un sur votre dépôt Docker Hub :
 
 ```sh
 docker login
 
-docker push <votre id docker`hub>/hello-world
-```
-
-Exemple de traces :
-
-```
-The push refers to repository [docker.io/<votre id docker hub>/hello-world]
-256a7af3acb1: Pushed
-latest: digest: sha256:cbf0d4e021288ac28c60433a62e0ca9ee42e4a830dd4d8479afc0ad5b12b7115 size: 528
+docker push <votre-id-docker-hub>/hello-world
 ```
 
 ## TP 2 : Pinger
 
-Dockerfile
+
+
+<details open>
+  <summary>Dockerfile</summary>
 
 ```Dockerfile
 FROM alpine
@@ -72,6 +76,8 @@ ARG SERVER_IP
 ENV SERVER ${SERVER_IP:-localhost}
 CMD ping $SERVER
 ```
+
+</details>
 
 1. Pour construire l'image Docker
 
@@ -121,9 +127,12 @@ services:
 
 ## TP 6 : Docker Machine
 
-### Création d'une machine virtuelle avec `docker-machine`
+**Objectifs** : Créez une machine virtuelle (VM) avec `docker-machine` pour hégerber l'application `pic-viewer`. Nommez cette VM `vm-web-server`.
+`
 
-#### Pour macOS / Linux (Virtualbox)
+### **Etape 1**: Commencez par créer la VM `vm-web-server`
+
+#### Pour MacOS / Linux (Virtualbox)
 
 ```sh
 docker-machine create --driver=virtualbox vm-web-server
@@ -131,36 +140,53 @@ docker-machine create --driver=virtualbox vm-web-server
 
 #### Pour Windows (Hyper-V)
 
-1. Créez un commutateur virtuel (virtual switch) nommé "form-docker" depuis l'interface Hyper-V.
+Créez d'abord un commutateur virtuel (virtual switch) depuis le Gestionnaire Hyper-V. Nommez le commutateur `form-docker` et sélectionnez `Réseau externe` comme type de connexion :
 
-![](./images/virtual-switch.png)
+![](./images/vitrual-switch.png)
 
-2. Créez la VM :
+Une fois que le commutaeur créé, ouvrez un terminal Powershell en mode administrateur et exécutez la commande ci-dessous :
+
+```sh
+docker-machine create --driver hyperv --hyperv-virtual-switch form-docker vm-web-server
+```
+
+Vous pouvez réduire la taille du disque virtuel en ajoutant cette option `--hyperv-disk-size 2048` à votre ligne de commande.
 
 ```sh
 docker-machine create --driver hyperv --hyperv-virtual-switch form-docker --hyperv-disk-size 2048 vm-web-server
 ```
 
-### Déploiement de l'application `pic-viewer` sans mapping de volumes
+### **Etape 2**: Déployer l'application `pic-viewer` sans mapping de volumes
 
-#### Pour macOS / Linux
+#### Pour MacOS / Linux
 
 ```sh
 eval $(docker-machine env vm-web-server)
-
-docker run -d -p 8080:5000 --restart=always ntdtfr/pic-viewer
 ```
 
 ![](./images/docker-machine-env.png)
 
+Déployez l'application `pic-viewer` :
+
+```sh
+docker run -d -p 8080:5000 --restart=always ntdtfr/pic-viewer
+```
 
 #### Pour Windows
+
+Exécutez cette commande depuis un Powershell en mode `administrateur`
 
 ```sh
 docker-machine env vm-web-server | Invoke-Expression
 ```
 
 ![](./images/docker-machine-env-expr.png)
+
+Déployez l'application `pic-viewer` :
+
+```sh
+docker run -d -p 8080:5000 --restart=always ntdtfr/pic-viewer
+```
 
 ### Reset des variables d'environnement
 
