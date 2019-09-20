@@ -4,20 +4,22 @@ services:
     image: nginx:1.13
     restart: always
     ports:
-    - 8080:80
-    - 8443:443
+    - 80:80
+    - 443:443
     volumes:
     - ./conf.d:/etc/nginx/conf.d
     depends_on:
-    - web
+    - pic-viewer
     networks:
     - webnet
 
-  web:
+  pic-viewer:
     image: ntdtfr/pic-viewer
     restart: always
-    volumes:
-    - /Users/ntran/Datas/pictures:/pic-viewer/static
+    ports:
+    - 5000:5000
+    # volumes:
+    # - /Users/ntran/Datas/pictures:/pic-viewer/static
     networks:
     - webnet
       

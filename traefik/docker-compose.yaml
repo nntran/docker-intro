@@ -1,0 +1,28 @@
+version: '3'
+services:
+
+  # Service 1 : reverse-proxy
+  reverse-proxy:
+    image: traefik:v2.0
+    restart: always
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8010:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Service 2 : pic-viewer
+  pic-viewer:
+    image: ntdtfr/pic-viewer
+    restart: always
+    ports:
+    - 5000:5000
+    volumes:
+    - /Users/ntran/Datas/pictures:/pic-viewer/static
+    labels:
+    - "traefik.http.routers.pic-viewer.rule=Host(`pv.docker.localhost`)"
