@@ -2,12 +2,18 @@
 
 ## Commandes utiles
 
-### Supprimer tous les conteneurs (containers) Docker
+### Suppression des conteneurs (containers) Docker
+
+#### Supprimer tous les conteneurs 
 
 ```sh
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 ```
+
+#### Supprimer seulement les conteneurs 'Exited'
+
+docker rm $(docker ps -a | grep 'Exited' | awk '{print $1}')
 
 ### Supprimer toutes les images Docker
 
@@ -19,6 +25,7 @@ docker rmi $(docker images -f 'dangling=true' -q)
 ### Supprimer seulement les images `none`
 
 ```sh
+docker rmi $(docker image ls -a | grep '<none>' | awk '{print $3}')
 docker rmi $(docker images -f 'dangling=true' -q)
 ```
 
@@ -211,8 +218,62 @@ eval $(docker-machine env -u)
 
 ## TP 7 : Swarm
 
+### Create the cluster VMs
 
-docker-stack-replicas.yaml
+```sh
+master_ip=`docker-machine ip vm-web-server`
+docker swarm init --advertise-addr $master_ip
+```
+
+* List all cluster VM:
+
+```
+docker-machine ls
+```
+
+```
+NAME            ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER     ERRORS
+vm-manager-01   -        virtualbox   Running   tcp://192.168.99.152:2376           v19.03.1   
+vm-manager-02   -        virtualbox   Running   tcp://192.168.99.153:2376           v19.03.1   
+vm-manager-03   -        virtualbox   Running   tcp://192.168.99.154:2376           v19.03.1   
+vm-worker-01    -        virtualbox   Running   tcp://192.168.99.155:2376           v19.03.1   
+vm-worker-02    -        virtualbox   Running   tcp://192.168.99.156:2376           v19.03.1   
+vm-worker-03    -        virtualbox   Running   tcp://192.168.99.157:2376           v19.03.1 
+```
+
+### Initialize Swarm
+
+```
+Swarm initialized: current node (nm7prjsmmkev04h1jkq0asdv4) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-07dax26x6l3odl7xniex5taq0fke1noy7i5mqgvv54xje8yk35-2dmxak6hf6zm7w6ha3bsknf0f 192.168.99.148:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+```
+
+
+* List all cluster nodes :
+
+```
+eval $(docker-machine env vm-manager-01)
+docker node ls
+```
+
+```
+ID                            HOSTNAME            STATUS              AVAILABILITY        MANAGER STATUS      ENGINE VERSION
+i6skoqovg4j52ghs5k30cbkct *   vm-manager-01       Ready               Active              Reachable           19.03.1
+ql2g8bs5aq73tr8rkkmerpk85     vm-manager-02       Ready               Active              Leader              19.03.1
+xqwichf48u12x6949dt8b19i2     vm-manager-03       Ready               Active              Reachable           19.03.1
+0zqid316x0g6bltm29wbt87xx     vm-worker-01        Ready               Active                                  19.03.1
+9fp48bv9imj1wv7y05ciaykx4     vm-worker-02        Ready               Active                                  19.03.1
+urrvjyekoq5yst7bbgplgxi8y     vm-worker-03        Ready               Active                                  19.03.1
+```
+
+### Deploy the services
+
+* docker-stack-replicas.yaml
 
 ```yaml
 version: "3"
@@ -231,29 +292,10 @@ services:
 ```
 
 ```sh
-master_ip=`docker-machine ip vm-web-server`
-docker swarm init --advertise-addr $master_ip
+docker stack deploy --compose-file docker-stack-replicas.yaml web
 ```
 
-```
-Swarm initialized: current node (nm7prjsmmkev04h1jkq0asdv4) is now a manager.
-
-To add a worker to this swarm, run the following command:
-
-    docker swarm join --token SWMTKN-1-07dax26x6l3odl7xniex5taq0fke1noy7i5mqgvv54xje8yk35-2dmxak6hf6zm7w6ha3bsknf0f 192.168.99.148:2377
-
-To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
-```
-
-```sh
-docker stack deploy --compose-file docker-stack.yaml web
-```
-
-```
-Creating network web_default
-Creating service web_pic-viewer
-```
-
+### Check the services is deployed 
 
 ```sh
 docker service ls
@@ -263,6 +305,8 @@ docker service ls
 ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
 mfysi1tzwfgz        web_pic-viewer      replicated          2/2                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
 ```
+
+### Scale services
 
 ```
 docker service scale web_pic-viewer=5
@@ -279,11 +323,31 @@ overall progress: 5 out of 5 tasks
 verify: Service converged
 ```
 
+
+### Tests load balancing
+
 ```sh
-docker service ls
+docker service logs -f web_pic-viewer
 ```
 
 ```
-ID                  NAME                MODE                REPLICAS            IMAGE                      PORTS
-mfysi1tzwfgz        web_pic-viewer      replicated          5/5                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Serving Flask app "app.py" (lazy loading)
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Environment: development
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Debug mode: on
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Restarting with stat
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Debugger is active!
+web_pic-viewer.5.1xq4v2l16att@vm-worker-03    |  * Debugger PIN: 322-074-200
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Serving Flask app "app.py" (lazy loading)
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Environment: development
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Debug mode: on
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Restarting with stat
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Debugger is active!
+web_pic-viewer.2.97i0t0wf13m5@vm-worker-01    |  * Debugger PIN: 147-357-853
+web_pic-viewer.3.ofnv18s5tyal@vm-worker-02    |  * Serving Flask app "app.py" (lazy loading)
+web_pic-viewer.3.ofnv18s5tyal@vm-worker-02    |  * Environment: development
+...
 ```
+
+![](./images/swarm-test-lb.png)
