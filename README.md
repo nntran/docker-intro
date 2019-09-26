@@ -86,7 +86,10 @@ docker push <votre-id-docker-hub>/hello-world
 
 ## TP 2 : Pinger
 
+**Objectifs :** 
 
+
+**Prérquis :**
 
 <details open>
   <summary>Dockerfile</summary>
@@ -121,11 +124,21 @@ docker push <votre id docker hub>/pinger
 
 ## TP 3 : Exposition des ports
 
+**Objectifs :** 
+
+
+**Prérquis :**
+
 ```sh
 docker run --name hello-world -p 8080:5000 -d ntdtfr/hello-world
 ```
 
 ## TP 4 : Volume et persistance des données
+
+**Objectifs :** 
+
+
+**Prérquis :**
 
 ```sh
 docker run --name pic1 -p 8081:5000 -v /Users/ntran/Datas/pictures:/pic-viewer/static -d ntdtfr/pic-viewer
@@ -133,7 +146,14 @@ docker run --name pic1 -p 8081:5000 -v /Users/ntran/Datas/pictures:/pic-viewer/s
 
 ## TP 5 : Composition des services avec `docker-compose`
 
-docker-compose.yml
+**Objectifs :** 
+
+
+**Prérquis :**
+
+
+<details open>
+  <summary>docker-compose.yml</summary>
 
 ```yaml
 version: "3"
@@ -146,6 +166,8 @@ services:
     volumes:
       - /Users/ntran/Datas/pictures:/pic-viewer/static
 ```
+
+</detail>
 
 ## TP 6 : Docker Machine
 
@@ -218,6 +240,12 @@ eval $(docker-machine env -u)
 
 ## TP 7 : Swarm
 
+**Objectifs :** 
+
+
+**Prérquis :**
+
+
 ### Create the cluster VMs
 
 ```sh
@@ -241,7 +269,7 @@ vm-worker-02    -        virtualbox   Running   tcp://192.168.99.156:2376       
 vm-worker-03    -        virtualbox   Running   tcp://192.168.99.157:2376           v19.03.1 
 ```
 
-### Initialize Swarm
+### Initialisation du cluster Swarm
 
 ```
 Swarm initialized: current node (nm7prjsmmkev04h1jkq0asdv4) is now a manager.
@@ -271,9 +299,12 @@ xqwichf48u12x6949dt8b19i2     vm-manager-03       Ready               Active    
 urrvjyekoq5yst7bbgplgxi8y     vm-worker-03        Ready               Active                                  19.03.1
 ```
 
-### Deploy the services
+### Déploiement des services
 
-* docker-stack-replicas.yaml
+* pic-viewer-stack-replicas.yaml
+
+<details open>
+  <summary>pic-viewer-stack-replicas.yaml</summary>
 
 ```yaml
 version: "3"
@@ -291,11 +322,13 @@ services:
         constraints: [node.role == worker]
 ```
 
+</details>
+
 ```sh
-docker stack deploy --compose-file docker-stack-replicas.yaml web
+docker stack deploy --compose-file pic-viewer-stack-replicas.yaml web
 ```
 
-### Check the services is deployed 
+### Vérification des services déployés
 
 ```sh
 docker service ls
@@ -306,7 +339,7 @@ ID                  NAME                MODE                REPLICAS            
 mfysi1tzwfgz        web_pic-viewer      replicated          2/2                 ntdtfr/pic-viewer:latest   *:8090->5000/tcp
 ```
 
-### Scale services
+### Scale des services
 
 ```
 docker service scale web_pic-viewer=5

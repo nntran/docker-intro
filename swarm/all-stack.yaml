@@ -1,0 +1,25 @@
+version: '3'
+services:
+
+  pic-viewer:
+    image: ntdtfr/pic-viewer
+    ports:
+    - 8090:5000
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
+
+  hello-world:
+    image: ntdtfr/hello-world
+    ports:
+    - 8091:5000
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
