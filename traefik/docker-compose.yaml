@@ -25,4 +25,4 @@ services:
     volumes:
     - /Users/ntran/Datas/pictures:/pic-viewer/static
     labels:
-    - "traefik.http.routers.pic-viewer.rule=Host(`pv.docker.localhost`)"
+    - "traefik.http.routers.formation.rule=Host(`pv.docker.localhost`)"
